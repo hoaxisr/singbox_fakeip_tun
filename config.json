@@ -1,0 +1,285 @@
+{
+  "log": {
+    "level": "fatal"
+  },
+  "dns":
+    {
+        "servers":
+        [
+		  {
+            "tag": "google",
+            "type": "tls",
+            "server": "8.8.8.8"
+           },
+        	{
+			"tag": "local-server",
+			"type": "local",
+			},
+			{
+			"tag": "fakeip-server",
+            "type": "fakeip",
+            "inet4_range": "198.18.0.0/15"
+         	}
+        ],
+		"rules": [ 
+		{ "query_type": [ "A" ], "server": "fakeip-server"}
+				 ],
+        "final": "local-server",
+        "independent_cache": true,
+        "disable_cache": false,
+        "disable_expire": false
+    },
+  "inbounds": [
+    { //может быть использован для socks5 прокси, например https://github.com/hdrover/discord-drover
+      "type": "mixed", 
+      "listen": "::",
+      "listen_port": 1080,
+      "tag": "socks5",
+      "tcp_fast_open": true
+    },
+	{ //если мы хотим использовать DNS сервер sing-box
+	  "tag": "dns-in",
+      "type": "direct",
+      "listen": "127.0.0.1",
+      "listen_port": 5353	
+	},
+    { //просто ТУН :) хотя у него есть особенности - https://habr.com/ru/articles/855164/comments/#comment_27497794
+    "type": "tun",
+    "tag": "tun-in",
+    "interface_name": "tun0",
+    "address": ["172.18.0.1/30" ],
+    "auto_route": true,
+	"auto_redirect": true,
+    "strict_route": false,
+    "stack": "system",
+    "sniff": true
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "selector",
+      "tag": "select",
+      "outbounds": [
+        "auto",
+        "vless1",
+        "vless2",
+        "vless3"
+      ],
+      "default": "vless1",
+      "interrupt_exist_connections": false
+    },
+    {
+      "type": "urltest",
+      "tag": "auto",
+      "outbounds": [
+        "vless1",
+        "vless2",
+        "vless3"
+      ],
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "5m",
+      "tolerance": 30,
+      "idle_timeout": "30m",
+      "interrupt_exist_connections": false
+    },
+    {
+      "type": "vless",
+      "tag": "vless1",
+      "server": "IP_server_VLESS", //замените на свой
+      "server_port": 443,
+      "uuid": "your_uuid", //замените на свой
+      "flow": "xtls-rprx-vision",
+      "packet_encoding": "xudp",
+      "tls": {
+        "enabled": true,
+        "server_name": "your_masking_SNI", //замените на свой
+        "utls": {
+          "enabled": true,
+          "fingerprint": "your_fingerprint" //замените на свой
+        },
+        "reality": {
+          "enabled": true,
+          "public_key": "your_pbk", //замените на свой
+          "short_id": "your_short_id" //замените на свой
+        }
+      }
+    },
+   {
+      "type": "vless",
+      "tag": "vless2",
+      "server": "IP_server_VLESS", //замените на свой
+      "server_port": 443,
+      "uuid": "your_uuid", //замените на свой
+      "flow": "xtls-rprx-vision",
+      "packet_encoding": "xudp",
+      "tls": {
+        "enabled": true,
+        "server_name": "your_masking_SNI", //замените на свой
+        "utls": {
+          "enabled": true,
+          "fingerprint": "your_fingerprint" //замените на свой
+        },
+        "reality": {
+          "enabled": true,
+          "public_key": "your_pbk", //замените на свой
+          "short_id": "your_short_id" //замените на свой
+        }
+      }
+    },
+	{
+      "type": "vless",
+      "tag": "vless3",
+      "server": "IP_server_VLESS", //замените на свой
+      "server_port": 443,
+      "uuid": "your_uuid", //замените на свой
+      "flow": "xtls-rprx-vision",
+      "packet_encoding": "xudp",
+      "tls": {
+        "enabled": true,
+        "server_name": "your_masking_SNI", //замените на свой
+        "utls": {
+          "enabled": true,
+          "fingerprint": "your_fingerprint" //замените на свой
+        },
+        "reality": {
+          "enabled": true,
+          "public_key": "your_pbk", //замените на свой
+          "short_id": "your_short_id" //замените на свой
+        }
+      }
+    },
+    {
+      "type": "block",
+      "tag": "blocked"
+    },
+    { "type": "direct",
+      "tag": "direct" }
+  ],
+  "route": {
+        "rule_set":
+        [
+            {
+            "tag": "mydomains", // необходимо создать файл mydomains.json и наполнить его доменами, которые вы хотите обходить
+            "type": "local",
+            "format": "source",
+            "path": "/etc/sing-box/ruleset/mydomains.json"
+            },
+            {
+                "tag": "geoip-ru",
+                "type": "remote",
+                "format": "binary",
+                "url": "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-ru.srs",
+                "download_detour": "auto"
+            },
+            {
+                 "tag": "discord",
+                 "type": "remote",
+                 "format": "binary",
+                 "url": "https://github.com/vernette/rulesets/raw/master/srs/discord-full.srs"
+             },
+           {
+                 "tag": "copilot",
+                 "type": "remote",
+                 "format": "binary",
+                 "url": "https://github.com/vernette/rulesets/raw/master/srs/copilot.srs"
+             },
+           {
+                 "tag": "grok",
+                 "type": "remote",
+                 "format": "binary",
+                 "url": "https://github.com/vernette/rulesets/raw/master/srs/grok.srs"
+             },
+           {
+                 "tag": "instagram",
+                 "type": "remote",
+                 "format": "binary",
+                 "url": "https://github.com/vernette/rulesets/raw/master/srs/instagram.srs"
+             },
+           {
+                 "tag": "netflix",
+                 "type": "remote",
+                 "format": "binary",
+                 "url": "https://github.com/vernette/rulesets/raw/master/srs/netflix.srs"
+             },
+           {
+                "tag": "openai",
+                "type": "remote",
+                "format": "binary",
+                "url": "https://github.com/vernette/rulesets/raw/master/srs/openai.srs"
+             },
+           {
+                "tag": "rkn",
+                "type": "remote",
+                "format": "binary",
+                "url": "https://github.com/vernette/rulesets/raw/master/srs/rkn.srs"
+             },
+           {
+                "tag": "telegram-voice-chats",
+                "type": "remote",
+                "format": "binary",
+                "url": "https://github.com/vernette/rulesets/raw/master/srs/telegram-voice-chats.srs"
+             },
+           {
+                 "tag": "tiktok",
+                 "type": "remote",
+                 "format": "binary",
+                 "url": "https://github.com/vernette/rulesets/raw/master/srs/tiktok.srs"
+             },
+           {
+                  "tag": "unavailable-in-russia",
+                  "type": "remote",
+                  "format": "binary",
+                  "url": "https://github.com/vernette/rulesets/raw/master/srs/unavailable-in-russia.srs"
+             },
+           {
+                  "tag": "x",
+                  "type": "remote",
+                  "format": "binary",
+                  "url": "https://github.com/vernette/rulesets/raw/master/srs/x.srs"
+             },
+           {
+                  "tag": "youtube",
+                  "type": "remote",
+                  "format": "binary",
+                  "url": "https://github.com/vernette/rulesets/raw/master/srs/youtube.srs"
+             }
+           
+        ],
+    "rules": [
+      {
+        "inbound": ["socks5"], //все что пришло в сокс5 идет в влесс1
+        "outbound": "vless1"
+      },
+	  { "inbound": ["tun-in", "dns-in"], "action": "sniff"},
+      { "protocol": "dns", "action": "hijack-dns"}, // перехватываем днс запросы
+      { "ip_is_private": true, "outbound": "direct"},
+      { "rule_set": "mydomains", "outbound": "auto" }, // наш список идет в лучший влесс
+      { "rule_set": [ 
+	  "discord",
+	   "youtube",
+	   "x",
+	   "unavailable-in-russia",
+	   "tiktok",
+	   "telegram-voice-chats",
+	   "rkn",
+	   "openai",
+	   "netflix",
+	   "instagram",
+	   "grok"],
+         "outbound": "auto" } 
+    ],
+    "default_domain_resolver": "local-server",
+    "final": "direct", // все чего нет в правилах и списках пойдет напрямую 
+    "auto_detect_interface": true
+  },
+  "experimental": {
+    "cache_file": {
+      "enabled": true,
+	  "store_fakeip": true
+    },
+  "clash_api": {
+     "external_controller": "0.0.0.0:9090",
+     "external_ui": "dashboard"
+  }
+ }
+}
