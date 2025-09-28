@@ -165,7 +165,7 @@
             "path": "/etc/sing-box/ruleset/mydomains.json"
             },
             {
-                "tag": "geoip-ru",
+                "tag": "geoip-ru", //можете использовать для правил, когда только ру идет в директ
                 "type": "remote",
                 "format": "binary",
                 "url": "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-ru.srs",
