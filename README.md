@@ -229,3 +229,14 @@ sudo journalctl -u sing-box --output cat -e
 ---
 
 ✦ Теперь вы можете использовать **Sing-box** как gateway для всей локальной сети!
+
+
+
+
+
+
+
+
+Спасибо https://github.com/vernette за собранные srs и очень качественную инструкцию
+Спасибо zipdots https://forummikrotik.ru/viewtopic.php?t=16938
+По большому счету эта инструкция просто для себя, чтобы не забыть :)
