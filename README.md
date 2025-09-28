@@ -9,6 +9,13 @@
 ## 1. Установка Sing-box
 
 ```bash
+sudo nano /etc/sysctl.conf
+# Уберите символ # перед следующей строкой:
+net.ipv4.ip_forward=1
+
+sudo sysctl -p
+sudo apt update
+sudo apt install curl
 curl -fsSL https://sing-box.app/install.sh | sh
 ```
 
